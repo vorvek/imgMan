@@ -150,9 +150,10 @@ prompt_proc :: proc "system" (hwnd: win.HWND, msg: u32, wp: win.WPARAM, lp: win.
 ask :: proc(title, text: string, kind: int=0, initial: string="") -> (int,string) {
     prompt=Prompt{text=text,kind=kind,initial=initial}
     r: win.RECT; win.GetWindowRect(app.window,&r)
+    width:=i32(340) if kind==2 else i32(560)
     height:=i32(200) if kind==2 else i32(250)
     prompt.window=win.CreateWindowExW(win.WS_EX_DLGMODALFRAME,win.L("imgManPrompt"),cast(win.LPCWSTR)w(title),
-        win.WS_CAPTION | win.WS_SYSMENU,(r.left+r.right-px(560))/2,(r.top+r.bottom-px(height))/2,px(560),px(height),app.window,nil,app.instance,nil)
+        win.WS_CAPTION | win.WS_SYSMENU,(r.left+r.right-px(width))/2,(r.top+r.bottom-px(height))/2,px(width),px(height),app.window,nil,app.instance,nil)
     dark_window(prompt.window)
     if kind==1 {
         prompt.edit=control(prompt.window,"EDIT",initial,win.WS_TABSTOP | win.ES_AUTOHSCROLL | win.WS_BORDER,10)
@@ -163,7 +164,7 @@ ask :: proc(title, text: string, kind: int=0, initial: string="") -> (int,string
         prompt.combo=control(prompt.window,"COMBOBOX","",win.WS_TABSTOP | win.CBS_DROPDOWNLIST | win.CBS_OWNERDRAWFIXED | win.CBS_HASSTRINGS | win.WS_VSCROLL,11)
         win.SendMessageW(prompt.combo,win.CB_SETITEMHEIGHT,~uintptr(0),win.LPARAM(px(24)))
         win.SendMessageW(prompt.combo,win.CB_SETITEMHEIGHT,0,win.LPARAM(px(24)))
-        win.MoveWindow(prompt.combo,px(22),px(46),px(500),px(180),true)
+        win.MoveWindow(prompt.combo,px(22),px(46),px(width-60),px(180),true)
         formats := [?]string{"360 KB  -  5.25 inch","720 KB  -  3.5 inch","1.44 MB  -  3.5 inch","2.88 MB  -  3.5 inch"}
         for label in formats {
             win.SendMessageW(prompt.combo,win.CB_ADDSTRING,0,cast(win.LPARAM)uintptr(w(label)))
@@ -176,10 +177,10 @@ ask :: proc(title, text: string, kind: int=0, initial: string="") -> (int,string
     if kind==2 { yes_label="Create" }
     ok:=control(prompt.window,"BUTTON",yes_label,win.BS_OWNERDRAW | win.WS_TABSTOP,1)
     button_y:=px(114) if kind==2 else px(164)
-    win.MoveWindow(ok,px(316),button_y,px(96),px(30),true)
+    win.MoveWindow(ok,px(width-244),button_y,px(96),px(30),true)
     if kind!=0 {
         cancel:=control(prompt.window,"BUTTON","Cancel",win.BS_OWNERDRAW | win.WS_TABSTOP,2)
-        win.MoveWindow(cancel,px(426),button_y,px(96),px(30),true)
+        win.MoveWindow(cancel,px(width-134),button_y,px(96),px(30),true)
     }
     if kind==3 {
         discard:=control(prompt.window,"BUTTON","Discard",win.BS_OWNERDRAW | win.WS_TABSTOP,3)
